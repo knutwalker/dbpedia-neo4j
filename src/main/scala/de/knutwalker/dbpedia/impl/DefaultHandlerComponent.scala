@@ -111,7 +111,7 @@ trait DefaultHandlerComponent extends HandlerComponent {
       while (it.hasNext) {
         handleBatch(it.next()) match {
           case Failure(e) ⇒ e.printStackTrace()
-          case Success(x) ⇒ metrics.report()
+          case Success(x) ⇒ // metrics.report()
         }
       }
     }
