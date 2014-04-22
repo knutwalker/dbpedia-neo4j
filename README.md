@@ -63,14 +63,14 @@ On top of that, that following changes are implemented:
 
 That means, you can use the `uri` property as a unique-id-kind-of property and the `value` property as a pretty-output-end-user-kind-of property (this also makes great node captions for the neo4j browser UI)
 
-The importer can create or maintain a schema index for later use. See [Configuration](#Configuration)
+The importer can create or maintain a schema index for later use. See [Configuration](#configuration)
 
 
 ## Configuration
 
 The importer uses [Typesafe Config](https://github.com/typesafehub/config#overview) for configuration, for details on how to write the config, please see their documentation.
 
-The following keys are used, see [reference.conf](blob/master/src/main/resources/reference.conf) for details
+The following keys are used, see [reference.conf](src/main/resources/reference.conf) for details
 - `dbpedia.db-dir`
 - `dbpedia.tx-size`
 - `dbpedia.approx-resources`
@@ -125,4 +125,4 @@ here's an example output:
 
 ## Credits
 
-Credit goes to @zazi and @sojoner for outlining the data model definition and possibly creating the need for this importer
+Credit goes to [@zazi](https://github.com/zazi) and [@sojoner](https://github.com/sojoner) for outlining the data model definition and possibly creating the need for this importer
