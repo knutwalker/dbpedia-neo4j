@@ -47,3 +47,4 @@ worker*.log
 *.db
 sbt-launch.jar
 dbpedia-neo4j.jar
+dbpedia-neo4j/neo4j.jar

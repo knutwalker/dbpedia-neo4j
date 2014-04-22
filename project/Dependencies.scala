@@ -8,9 +8,10 @@ object Version {
   val hppc         = "0.6.0"
   val logback      = "1.1.2"
   val metrics      = "3.0.2"
-  val neo4j        = "2.0.2"
-  val nxParser     = "1.2.5"
+  val neo4j        = "2.0.3"
   val slf4j        = "1.7.7"
+  val scalatest    = "2.1.5"
+  val scalacheck   = "1.11.3"
 }
 
 object Library {
@@ -21,33 +22,32 @@ object Library {
     ExclusionRule("org.neo4j", "neo4j-udc"),
     ExclusionRule("org.neo4j", "neo4j-graph-algo"),
     ExclusionRule("org.neo4j", "neo4j-graph-matching"),
+    ExclusionRule("org.neo4j", "neo4j-jmx"),
     ExclusionRule("org.scala-lang", "scala-library")
   )
 
-  val compress  = "org.apache.commons"   % "commons-compress" % Version.compress
-  val config    = "com.typesafe"         % "config"           % Version.config
-  val disruptor = "com.lmax"             % "disruptor"        % Version.disruptor
-  val hppc      = "com.carrotsearch"     % "hppc"             % Version.hppc
-  val logback   = "ch.qos.logback"       % "logback-classic"  % Version.logback   exclude("org.slf4j", "slf4j-api")
-  val metrics   = "com.codahale.metrics" % "metrics-core"     % Version.metrics   exclude("org.slf4j", "slf4j-api")
-  val neo4j     = "org.neo4j"            % "neo4j"            % Version.neo4j     excludeAll (neo4jExcludes: _*)
-  val nxParser  = "org.semanticweb.yars" % "nxparser"         % Version.nxParser
-  val slf4j     = "org.slf4j"            % "slf4j-api"        % Version.slf4j
+  val compress   = "org.apache.commons"    %  "commons-compress" % Version.compress
+  val config     = "com.typesafe"          %  "config"           % Version.config
+  val disruptor  = "com.lmax"              %  "disruptor"        % Version.disruptor
+  val hppc       = "com.carrotsearch"      %  "hppc"             % Version.hppc
+  val logback    = "ch.qos.logback"        %  "logback-classic"  % Version.logback   exclude("org.slf4j", "slf4j-api")
+  val metrics    = "com.codahale.metrics"  %  "metrics-core"     % Version.metrics   exclude("org.slf4j", "slf4j-api")
+  val neo4j      = "org.neo4j"             %  "neo4j"            % Version.neo4j     excludeAll (neo4jExcludes: _*)
+  val slf4j      = "org.slf4j"             %  "slf4j-api"        % Version.slf4j
+  val scalatest  = "org.scalatest"        %%  "scalatest"        % Version.scalatest
+  val scalacheck = "org.scalacheck"       %%  "scalacheck"       % Version.scalacheck
 }
 
 object Dependencies {
 
-  import Library._
+  def compile   (deps: ModuleID*): Seq[ModuleID] = deps map (_ % "compile")
+  def provided  (deps: ModuleID*): Seq[ModuleID] = deps map (_ % "provided")
+  def test      (deps: ModuleID*): Seq[ModuleID] = deps map (_ % "test")
+  def runtime   (deps: ModuleID*): Seq[ModuleID] = deps map (_ % "runtime")
+  def container (deps: ModuleID*): Seq[ModuleID] = deps map (_ % "container")
 
-  val dbpedia = List(
-    compress,
-    config,
-    disruptor,
-    hppc,
-    logback,
-    metrics,
-    neo4j,
-    nxParser,
-    slf4j
+  val resolvers = List(
+    "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
+    "NxParser" at "http://nxparser.googlecode.com/svn/repository"
   )
 }
