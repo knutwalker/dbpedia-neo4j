@@ -1,5 +1,6 @@
 package de.knutwalker.dbpedia.util
 
+import scala.collection.immutable.Seq
 import scala.collection.mutable.ListBuffer
 
 object itertools {

@@ -12,6 +12,8 @@ trait MetricsComponent {
 
     def relAdded(): Unit
 
+    def nodeUpdated(): Unit
+
     def time[A](name: String)(f: ⇒ A): A
 
     def start(): () ⇒ Long
@@ -22,5 +24,4 @@ trait MetricsComponent {
 
     def shutdown(): Unit
   }
-
 }

@@ -19,5 +19,4 @@ trait DefaultImporterComponent extends ImporterComponent {
       h(grouped)
     }
   }
-
 }

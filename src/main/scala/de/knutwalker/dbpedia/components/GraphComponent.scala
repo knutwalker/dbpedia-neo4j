@@ -1,6 +1,7 @@
 package de.knutwalker.dbpedia.components
 
 import org.neo4j.graphdb.{ DynamicLabel, Label, RelationshipType }
+import scala.collection.immutable.Seq
 import scala.util.Try
 
 trait GraphComponent {
@@ -106,5 +107,4 @@ trait GraphComponent {
 
     def shutdown(): Unit
   }
-
 }

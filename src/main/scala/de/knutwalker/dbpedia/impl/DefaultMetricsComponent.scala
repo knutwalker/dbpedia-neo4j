@@ -23,6 +23,7 @@ trait DefaultMetricsComponent extends MetricsComponent {
     private final val triples = reg.meter("triples")
     private final val nodes = reg.meter("nodes")
     private final val rels = reg.meter("rels")
+    private final val updates = reg.meter("updates")
     private final val importer = reg.timer("import")
 
     def time[A](name: String)(f: ⇒ A): A = {
@@ -38,6 +39,8 @@ trait DefaultMetricsComponent extends MetricsComponent {
 
     def nodeAdded() = nodes.mark()
 
+    def nodeUpdated() = updates.mark()
+
     def start() = {
       val ctx = importer.time()
       () ⇒ ctx.stop()
@@ -52,13 +55,13 @@ trait DefaultMetricsComponent extends MetricsComponent {
 
   object MetricReporter {
 
-    private final val durationUnit = TimeUnit.MILLISECONDS
+    private final val durationUnit = TimeUnit.MICROSECONDS
     private final val durationFactor = 1.0 / durationUnit.toNanos(1)
 
     private final val rateUnit = TimeUnit.SECONDS
     private final val rateFactor = rateUnit.toSeconds(1)
 
-    private final def duration(duration: Double) = f"${duration * durationFactor}%.2fms"
+    private final def duration(duration: Double) = f"${duration * durationFactor}%.2fus"
 
     private final def rate(rate: Double) = f"${rate * rateFactor}%.2f/s"
 
@@ -126,6 +129,7 @@ trait DefaultMetricsComponent extends MetricsComponent {
       val meters = new util.TreeMap[String, Meter]
       meters.put("nodes", registry.meter("nodes"))
       meters.put("rels", registry.meter("rels"))
+      meters.put("updates", registry.meter("updates"))
       meters
     }
 
@@ -159,5 +163,4 @@ trait DefaultMetricsComponent extends MetricsComponent {
       logger.info(s"[{}]: ${ev.text(entry.getValue)}", entry.getKey)
     }
   }
-
 }

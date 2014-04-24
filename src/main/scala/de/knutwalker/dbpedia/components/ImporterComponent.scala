@@ -23,10 +23,10 @@ trait ImporterComponent {
       elapsed()
 
       h.shutdown()
+      p.shutdown()
 
       metrics.reportAll()
       metrics.shutdown()
     }
   }
-
 }
