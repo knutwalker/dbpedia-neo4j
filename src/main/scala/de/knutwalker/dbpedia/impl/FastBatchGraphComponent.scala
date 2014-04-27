@@ -16,7 +16,7 @@ trait FastBatchGraphComponent extends GraphComponent {
 
   type NodeType = Long
 
-  lazy val graph: Graph = new FastBatchGraph
+  val graph: Graph = new FastBatchGraph
 
   private final class FastBatchGraph extends Graph {
 

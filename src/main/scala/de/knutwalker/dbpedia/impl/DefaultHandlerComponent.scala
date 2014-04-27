@@ -4,7 +4,7 @@ import de.knutwalker.dbpedia.components.{ SettingsComponent, ParserComponent, Me
 import org.neo4j.graphdb.{ DynamicRelationshipType, RelationshipType }
 import org.semanticweb.yars.nx.namespace.{ SKOS, RDFS, RDF }
 import org.semanticweb.yars.nx.{ Literal, Node, Resource, BNode }
-import scala.collection.{Seq => GSeq}
+import scala.collection.{ Seq ⇒ GSeq }
 import scala.collection.immutable.Seq
 import scala.collection.mutable
 import scala.util.{ Success, Failure, Try }
