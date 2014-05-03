@@ -5,12 +5,12 @@ import de.knutwalker.dbpedia.importer.{ MetricsComponent, SettingsComponent, Gra
 import java.util
 import org.neo4j.graphdb.{ DynamicRelationshipType, DynamicLabel, Label, RelationshipType }
 import org.neo4j.helpers.collection.MapUtil
-import org.neo4j.unsafe.batchinsert.BatchInserters
+import org.neo4j.unsafe.batchinsert.{ BatchInserter, BatchInserters }
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 trait Neo4jBatchComponent extends GraphComponent {
-  this: SettingsComponent with MetricsComponent ⇒
+  this: MetricsComponent ⇒
 
   type NodeType = Long
   type RelType = RelationshipType
@@ -19,60 +19,68 @@ trait Neo4jBatchComponent extends GraphComponent {
 
   private final class Neo4jBatchGraph extends Graph {
 
-    private val megs: Double = 1000 * 1000
+    private[this] var inserter: BatchInserter = _
 
-    private def mem(n: Int) = f"${n / megs}%.0fM"
+    private[this] val labels = new mutable.AnyRefMap[String, Label](512)
 
-    private def inserterConfig = {
-      val res = settings.approximatedResources
+    private[this] var resources: ObjectLongMap[String] = _
+    private[this] var bnodes: ObjectLongMap[String] = _
 
-      // TODO: allow for fine grained settings
-      val relsPerNode = 3
-      val propsPerNode = 4
+    def startup(settings: SettingsComponent#Settings): Unit = {
+      val inserterConfig = {
+        val megs: Double = 1000 * 1000
+        def mem(n: Int) = f"${n / megs}%.0fM"
 
-      // as per http://docs.neo4j.org/chunked/stable/configuration-caches.html
-      val bytesPerNode = 14
-      val bytesPerRel = 33
-      val bytesPerProp = 42
-      val bytesPerStringProp = 128 // might be totally off
+        val res = settings.approximatedResources
 
-      val nodes = res
-      val relationships = nodes * relsPerNode
-      val properties = nodes * propsPerNode
-      val stringProperties = properties
+        // TODO: allow for fine grained settings
+        val relsPerNode = 3
+        val propsPerNode = 4
 
-      val nodesMem = mem(nodes * bytesPerNode)
-      val relsMem = mem(relationships * bytesPerRel)
-      val propsMem = mem(properties * bytesPerProp)
-      val stringPropsMem = mem(stringProperties * bytesPerStringProp)
+        // as per http://docs.neo4j.org/chunked/stable/configuration-caches.html
+        val bytesPerNode = 14
+        val bytesPerRel = 33
+        val bytesPerProp = 42
+        val bytesPerStringProp = 128 // might be totally off
 
-      MapUtil.stringMap(
-        // TODO: make cache_type configurable
-        "cache_type", "none",
-        "use_memory_mapped_buffers", "true",
-        "neostore.nodestore.db.mapped_memory", nodesMem,
-        "neostore.relationshipstore.db.mapped_memory", relsMem,
-        "neostore.propertystore.db.mapped_memory", propsMem,
-        "neostore.propertystore.db.strings.mapped_memory", stringPropsMem,
-        "neostore.propertystore.db.arrays.mapped_memory", "0M",
-        "neostore.propertystore.db.index.keys.mapped_memory", "5M",
-        "neostore.propertystore.db.index.mapped_memory", "5M")
+        val nodes = res
+        val relationships = nodes * relsPerNode
+        val properties = nodes * propsPerNode
+        val stringProperties = properties
+
+        val nodesMem = mem(nodes * bytesPerNode)
+        val relsMem = mem(relationships * bytesPerRel)
+        val propsMem = mem(properties * bytesPerProp)
+        val stringPropsMem = mem(stringProperties * bytesPerStringProp)
+
+        MapUtil.stringMap(
+          // TODO: make cache_type configurable
+          "cache_type", "none",
+          "use_memory_mapped_buffers", "true",
+          "neostore.nodestore.db.mapped_memory", nodesMem,
+          "neostore.relationshipstore.db.mapped_memory", relsMem,
+          "neostore.propertystore.db.mapped_memory", propsMem,
+          "neostore.propertystore.db.strings.mapped_memory", stringPropsMem,
+          "neostore.propertystore.db.arrays.mapped_memory", "0M",
+          "neostore.propertystore.db.index.keys.mapped_memory", "5M",
+          "neostore.propertystore.db.index.mapped_memory", "5M")
+      }
+
+      val batchInserter = {
+        val config = inserterConfig
+        BatchInserters.inserter(settings.graphDbDir, config)
+      }
+
+      if (settings.createDeferredIndices) {
+        batchInserter.createDeferredSchemaIndex(DynamicLabel.label(Labels.resource)).on(Properties.uri).create()
+        batchInserter.createDeferredSchemaIndex(DynamicLabel.label(Labels.literal)).on(Properties.value).create()
+      }
+
+      inserter = batchInserter
+
+      resources = ObjectLongOpenHashMap.newInstanceWithExpectedSize(settings.approximatedResources)
+      bnodes = ObjectLongOpenHashMap.newInstanceWithExpectedSize(settings.txSize)
     }
-
-    private val inserter = {
-      val config = inserterConfig
-      BatchInserters.inserter(settings.graphDbDir, config)
-    }
-
-    if (settings.createDeferredIndices) {
-      inserter.createDeferredSchemaIndex(DynamicLabel.label(Labels.resource)).on(Properties.uri).create()
-      inserter.createDeferredSchemaIndex(DynamicLabel.label(Labels.literal)).on(Properties.value).create()
-    }
-
-    private val labels = new mutable.AnyRefMap[String, Label](32)
-
-    private val resources: ObjectLongMap[String] = ObjectLongOpenHashMap.newInstanceWithExpectedSize(settings.approximatedResources)
-    private val bnodes: ObjectLongMap[String] = ObjectLongOpenHashMap.newInstanceWithExpectedSize(settings.txSize)
 
     private def getLabel(label: String): Label = {
       labels.getOrElseUpdate(label, DynamicLabel.label(label))

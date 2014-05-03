@@ -1,5 +1,5 @@
 package de.knutwalker.dbpedia.neo4j
 
-object Import extends ParallelBatchImportComponent
+object ParallelImport extends ParallelBatchImportComponent
 
 object SerialImport extends SerialBatchImportComponent

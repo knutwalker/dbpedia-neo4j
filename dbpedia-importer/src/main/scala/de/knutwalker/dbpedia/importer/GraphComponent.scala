@@ -1,7 +1,7 @@
 package de.knutwalker.dbpedia.importer
 
 trait GraphComponent {
-  this: SettingsComponent with MetricsComponent ⇒
+  this: MetricsComponent ⇒
 
   type NodeType
   type RelType
@@ -33,6 +33,8 @@ trait GraphComponent {
     def createRelTypeFor(name: String): RelType
 
     def subjectAdded(): Unit
+
+    def startup(settings: SettingsComponent#Settings): Unit
 
     def shutdown(): Unit
 

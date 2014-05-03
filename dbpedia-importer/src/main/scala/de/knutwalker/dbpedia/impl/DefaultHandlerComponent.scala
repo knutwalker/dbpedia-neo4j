@@ -1,12 +1,12 @@
 package de.knutwalker.dbpedia.impl
 
-import de.knutwalker.dbpedia.importer.{ SettingsComponent, MetricsComponent, GraphComponent, HandlerComponent }
+import de.knutwalker.dbpedia.importer.{ MetricsComponent, GraphComponent, HandlerComponent }
 import de.knutwalker.dbpedia.{ Literal, BNode, Statement, Node, Resource }
 import scala.collection.mutable
 import scala.util.Try
 
 trait DefaultHandlerComponent extends HandlerComponent {
-  this: GraphComponent with MetricsComponent with SettingsComponent ⇒
+  this: GraphComponent with MetricsComponent ⇒
 
   val handler: Handler = new DefaultHandler
 
@@ -92,11 +92,7 @@ trait DefaultHandlerComponent extends HandlerComponent {
       graph.subjectAdded()
     }
 
-    def shutdown(): Unit = {
-      metrics.time("shutdown") {
-        Try(graph.shutdown())
-      }
-    }
+    def shutdown(): Unit = ()
   }
 
 }

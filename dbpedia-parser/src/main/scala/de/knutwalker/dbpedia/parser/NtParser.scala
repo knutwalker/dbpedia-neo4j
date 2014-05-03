@@ -335,10 +335,6 @@ final class NtParser {
     else false
   }
 
-  private[this] def error(s: String) = {
-    throwError(s"parsing error at char $pos, expected [$s], but found [$cursor]")
-  }
-
   private[this] def error(): Boolean = {
     error(Array.empty[Char])
   }
@@ -350,10 +346,14 @@ final class NtParser {
   private[this] def error(c: Array[Char]): Boolean = {
     val expected = c.length match {
       case 0 ⇒ "n/a"
-      case 1 ⇒ c.head
+      case 1 ⇒ c.head.toString
       case n ⇒ s"${c.init.mkString(", ")}, or ${c.last}"
     }
-    throwError(s"parsing error at char $pos, expected [$expected], but found [$cursor]")
+    error(expected)
+  }
+
+  private[this] def error(s: String) = {
+    throwError(s"parsing error at char $pos, expected [$s], but found [$cursor]")
   }
 
   private[this] def throwError(text: String): Boolean = {

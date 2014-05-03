@@ -9,6 +9,7 @@ object Version {
   val logback      = "1.1.2"
   val metrics      = "3.0.2"
   val neo4j        = "2.0.3"
+  val scopt        = "3.2.0"
   val slf4j        = "1.7.7"
   val scalatest    = "2.1.5"
   val scalacheck   = "1.11.3"
@@ -33,6 +34,7 @@ object Library {
   val logback    = "ch.qos.logback"        %  "logback-classic"  % Version.logback   exclude("org.slf4j", "slf4j-api")
   val metrics    = "com.codahale.metrics"  %  "metrics-core"     % Version.metrics   exclude("org.slf4j", "slf4j-api")
   val neo4j      = "org.neo4j"             %  "neo4j"            % Version.neo4j     excludeAll (neo4jExcludes: _*)
+  val scopt      = "com.github.scopt"     %%  "scopt"            % Version.scopt
   val slf4j      = "org.slf4j"             %  "slf4j-api"        % Version.slf4j
   val scalatest  = "org.scalatest"        %%  "scalatest"        % Version.scalatest
   val scalacheck = "org.scalacheck"       %%  "scalacheck"       % Version.scalacheck

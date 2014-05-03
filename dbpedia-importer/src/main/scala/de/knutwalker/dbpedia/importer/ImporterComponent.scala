@@ -1,29 +1,38 @@
 package de.knutwalker.dbpedia.importer
 
+import scala.util.Try
+
 trait ImporterComponent {
-  this: MetricsComponent with ParserComponent with HandlerComponent with SettingsComponent ⇒
+  this: MetricsComponent with ParserComponent with HandlerComponent with GraphComponent ⇒
 
   def importer: Importer
 
-  trait Importer extends (Array[String] ⇒ Unit) {
+  trait Importer extends (SettingsComponent#Settings ⇒ Unit) {
 
-    def apply(fileNames: Array[String], txSize: Int, p: Parser, h: Handler): Unit
+    def apply(fileNames: List[String], txSize: Int, p: Parser, h: Handler): Unit
 
-    def apply(fileNames: Array[String]): Unit = {
+    def apply(settings: SettingsComponent#Settings): Unit = {
       val p = parser
       val h = handler
-      val txSize = settings.txSize
+      val g = graph
 
-      sys.addShutdownHook(h.shutdown())
+      val shutdown = () ⇒ metrics.time("shutdown") {
+        Try(p.shutdown())
+        Try(h.shutdown())
+        Try(g.shutdown())
+      }
+
+      sys.addShutdownHook(shutdown())
+
+      g.startup(settings)
 
       val elapsed = metrics.start()
 
-      apply(fileNames, txSize, p, h)
+      apply(settings.filesToImport, settings.txSize, p, h)
 
       elapsed()
 
-      h.shutdown()
-      p.shutdown()
+      shutdown()
 
       metrics.reportAll()
       metrics.shutdown()

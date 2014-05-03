@@ -3,14 +3,15 @@ package de.knutwalker.dbpedia.neo4j
 import de.knutwalker.dbpedia.impl._
 import de.knutwalker.dbpedia.importer.{ ImporterComponent, GraphComponent }
 
-trait BaseImporter extends ConfigSettingsComponent
+trait BaseImporter extends ScoptSettingsComponent
     with DefaultParserComponent
     with DefaultMetricsComponent
     with DefaultHandlerComponent {
   this: GraphComponent with ImporterComponent ⇒
 
   def main(args: Array[String]) {
-    importer(args)
+    initialize(args)
+    importer(settings)
   }
 }
 

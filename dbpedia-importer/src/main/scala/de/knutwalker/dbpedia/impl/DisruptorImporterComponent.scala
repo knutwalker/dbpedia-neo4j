@@ -3,12 +3,12 @@ package de.knutwalker.dbpedia.impl
 import com.lmax.disruptor.BusySpinWaitStrategy
 import com.lmax.disruptor.dsl.{ ProducerType, Disruptor }
 import de.knutwalker.dbpedia.importer.disruptor.{ StatementEvent, StatementEventProducer, StatementEventHandler }
-import de.knutwalker.dbpedia.importer.{ SettingsComponent, HandlerComponent, ParserComponent, MetricsComponent, ImporterComponent }
+import de.knutwalker.dbpedia.importer.{ GraphComponent, SettingsComponent, HandlerComponent, ParserComponent, MetricsComponent, ImporterComponent }
 import de.knutwalker.dbpedia.util.{ NamedThreadFactory, itertools }
 import java.util.concurrent.Executors
 
 trait DisruptorImporterComponent extends ImporterComponent {
-  this: MetricsComponent with ParserComponent with HandlerComponent with SettingsComponent ⇒
+  this: MetricsComponent with ParserComponent with HandlerComponent with GraphComponent ⇒
 
   val importer: Importer = new DisruptorImporter
 
@@ -19,7 +19,7 @@ trait DisruptorImporterComponent extends ImporterComponent {
     // TODO: estimate
     private val bufferSize = 1 << 10
 
-    def apply(fileNames: Array[String], txSize: Int, p: Parser, h: Handler) = {
+    def apply(fileNames: List[String], txSize: Int, p: Parser, h: Handler) = {
 
       val executor = Executors.newSingleThreadExecutor(threadFactory)
       val disruptor = new Disruptor(

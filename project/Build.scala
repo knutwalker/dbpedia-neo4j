@@ -52,7 +52,7 @@ object Build extends Build {
     .dependsOn(dbpediaCore, dbpediaLoader, dbpediaParser)
     .settings(dbpediaModuleSettings: _*)
     .settings(libraryDependencies ++=
-      compile(disruptor, metrics, config) ++
+      compile(disruptor, metrics, config, scopt) ++
       test(scalacheck, scalatest))
 
 
@@ -60,10 +60,7 @@ object Build extends Build {
     .dependsOn(dbpediaCore, dbpediaLoader, dbpediaParser, dbpediaImporter)
     .settings(dbpediaModuleSettings: _*)
     .settings(dbpediaAssemblySettings: _*)
-    .settings(
-      mainClass in assembly := Some("de.knutwalker.dbpedia.neo4j.Import"),
-      outputPath in assembly := baseDirectory.value / ".." / ("dbpedia-" + (jarName in assembly).value)
-    )
+    .settings(mainClass in assembly := Some("de.knutwalker.dbpedia.neo4j.ParallelImport"))
     .settings(libraryDependencies ++=
       compile(neo4j, hppc, logback) ++
       test(scalacheck, scalatest))

@@ -40,6 +40,7 @@ object BuildSettings {
 
   lazy val dbpediaAssemblySettings = assemblySettings ++ Seq(
     jarName in assembly := s"${name.value}.jar",
+    outputPath in assembly := baseDirectory.value / ".." / ("dbpedia-" + (jarName in assembly).value),
     assemblyOption in assembly ~= { _.copy(prependShellScript = Some(Seq(
       "#!/usr/bin/env sh",
       """JAVA_OPTS="-server -d64 -Xms4G -Xmx4G -XX:NewRatio=5 -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:ParallelCMSThreads=4 -XX:+CMSParallelRemarkEnabled -XX:+CMSIncrementalMode -XX:+CMSIncrementalPacing -XX:CMSIncrementalDutyCycle=10 -XX:CMSFullGCsBeforeCompaction=1 ${JAVA_OPTS}" """,
