@@ -157,7 +157,17 @@ final class NtParser {
 
   private[this] def PercentEscapedCharacter(): Unit = {
     advance('%') || error('%') // TODO: advance && error => mustAdvance
-    append(capturePercentDigits())
+    append(percentEscaped0(0, new Array[Byte](1)))
+  }
+
+  @tailrec private[this] def percentEscaped0(idx: Int, buf: Array[Byte]): Array[Byte] = {
+    buf(idx) = capturePercentDigits()
+    cursor match {
+      case '%' =>
+        advance()
+        percentEscaped0(idx + 1, grow(buf, idx + 2))
+      case _ => buf
+    }
   }
 
   private[this] def SlashEscapedCharacter(): Unit = {
@@ -194,9 +204,9 @@ final class NtParser {
     append(captureSuperUnicodeDigits())
   }
 
-  private[this] def capturePercentDigits(): Char = (
+  private[this] def capturePercentDigits(): Byte = (
     captureHexDigit() * 16 +
-    captureHexDigit()).asInstanceOf[Char]
+    captureHexDigit()).toByte
 
   private[this] def captureUnicodeDigits(): Char = (
     captureHexDigit() * 4096 +
@@ -206,32 +216,32 @@ final class NtParser {
 
   private[this] def captureSuperUnicodeDigits(): Int =
     captureHexDigit() * 268435456 +
-      captureHexDigit() * 16777216 +
-      captureHexDigit() * 1048576 +
-      captureHexDigit() * 65536 +
-      captureHexDigit() * 4096 +
-      captureHexDigit() * 256 +
-      captureHexDigit() * 16 +
-      captureHexDigit()
+    captureHexDigit() * 16777216 +
+    captureHexDigit() * 1048576 +
+    captureHexDigit() * 65536 +
+    captureHexDigit() * 4096 +
+    captureHexDigit() * 256 +
+    captureHexDigit() * 16 +
+    captureHexDigit()
 
   private[this] def captureHexDigit(): Int = {
-    //    IS_HEX_CHAR(cursor) || error(Array('a')) // TODD: HEX_CHARS  // TODO: F || error => require(That)
+    assert(IS_HEX_CHAR(cursor), s"$cursor is not a hex character")
     val r = hexValue(cursor)
     advance()
     r
   }
 
-  @tailrec private[this] def captureHexDigits0(index: Int, len: Int, buf: Array[Char]): Char = {
-    if (index < len) {
-      IS_HEX_CHAR(cursor) || error(Array('a')) // TODD: HEX_CHARS  // TODO: F || error => require(That)
-      buf(index) = cursor
-      advance()
-      captureHexDigits0(index + 1, len, buf)
-    }
-    else {
-      java.lang.Integer.parseInt(new String(buf), 16).asInstanceOf[Char]
-    }
-  }
+//  @tailrec private[this] def captureHexDigits0(index: Int, len: Int, buf: Array[Char]): Char = {
+//    if (index < len) {
+//      IS_HEX_CHAR(cursor) || error(Array('a')) // TODD: HEX_CHARS  // TODO: F || error => require(That)
+//      buf(index) = cursor
+//      advance()
+//      captureHexDigits0(index + 1, len, buf)
+//    }
+//    else {
+//      java.lang.Integer.parseInt(new String(buf), 16).asInstanceOf[Char]
+//    }
+//  }
 
   private[this] def TypedLiteral(value: String) = {
     advance("^^") || error('^')
@@ -353,7 +363,11 @@ final class NtParser {
   }
 
   private[this] def error(s: String) = {
-    throwError(s"parsing error at char $pos, expected [$s], but found [$cursor]")
+    val cursorChar = cursor match {
+      case END => "EOI"
+      case x => x.toString
+    }
+    throwError(s"parsing error at char ${pos + 1}, expected [$s], but found [$cursorChar]")
   }
 
   private[this] def throwError(text: String): Boolean = {
@@ -389,7 +403,13 @@ final class NtParser {
 
   private[this] def append(c: Char): Unit = sb append c
 
+  private[this] def append(b: Byte): Unit = append(Array(b))
+
+  private[this] def append(bs: Array[Byte]): Unit = sb append newString(bs)
+
   private[this] def append(cp: Int): Unit = sb appendCodePoint cp
+
+  private[this] def newString(bs: Array[Byte]) = new String(bs, `UTF-8`)
 
   private[this] def hexValue(c: Char): Int = (c & 0x1f) + ((c >> 6) * 0x19) - 0x10
 
@@ -412,6 +432,18 @@ final class NtParser {
       input = newArray
     }
   }
+
+  private[this] def grow(oldArray: Array[Byte], to: Int): Array[Byte] = {
+    assert(to >= 0, "size must be positive (got " + to + "): likely integer overflow?")
+    if (oldArray.length < to) {
+      val newArray = new Array[Byte](to)
+      System.arraycopy(oldArray, 0, newArray, 0, oldArray.length)
+      newArray
+    }
+    else oldArray
+  }
+
+  private[this] val `UTF-8` = Charset.forName("UTF-8")
 
   private[this] val END = Char.MinValue
   private[this] val WHITESPACE = Array(' ', '\t')
@@ -503,4 +535,16 @@ object NtParser {
     println("statements = ")
     statements foreach println
   }
+}
+
+object NtTest extends App {
+  val parser = new NtParser
+
+  val line = """<t%B2t\r> <""" + '\\' + """uFFFFy> <d> ."""
+
+  println("parsed = " + parser.parse(line))
+
+  val bytes = parser.parseOpt(line).fold(Array.empty[Byte])(_.toString.getBytes("UTF-8"))
+
+  println("parses bytes = " + java.util.Arrays.toString(bytes))
 }

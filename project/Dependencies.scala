@@ -2,6 +2,7 @@ import sbt._
 
 object Version {
   val scala        = "2.11.0"
+  val commonsLang  = "3.3.2"
   val compress     = "1.8"
   val config       = "1.2.0"
   val disruptor    = "3.2.1"
@@ -27,17 +28,18 @@ object Library {
     ExclusionRule("org.scala-lang", "scala-library")
   )
 
-  val compress   = "org.apache.commons"    %  "commons-compress" % Version.compress
-  val config     = "com.typesafe"          %  "config"           % Version.config
-  val disruptor  = "com.lmax"              %  "disruptor"        % Version.disruptor
-  val hppc       = "com.carrotsearch"      %  "hppc"             % Version.hppc
-  val logback    = "ch.qos.logback"        %  "logback-classic"  % Version.logback   exclude("org.slf4j", "slf4j-api")
-  val metrics    = "com.codahale.metrics"  %  "metrics-core"     % Version.metrics   exclude("org.slf4j", "slf4j-api")
-  val neo4j      = "org.neo4j"             %  "neo4j"            % Version.neo4j     excludeAll (neo4jExcludes: _*)
-  val scopt      = "com.github.scopt"     %%  "scopt"            % Version.scopt
-  val slf4j      = "org.slf4j"             %  "slf4j-api"        % Version.slf4j
-  val scalatest  = "org.scalatest"        %%  "scalatest"        % Version.scalatest
-  val scalacheck = "org.scalacheck"       %%  "scalacheck"       % Version.scalacheck
+  val commonsLang = "org.apache.commons"    %  "commons-lang3"    % Version.commonsLang
+  val compress    = "org.apache.commons"    %  "commons-compress" % Version.compress
+  val config      = "com.typesafe"          %  "config"           % Version.config
+  val disruptor   = "com.lmax"              %  "disruptor"        % Version.disruptor
+  val hppc        = "com.carrotsearch"      %  "hppc"             % Version.hppc
+  val logback     = "ch.qos.logback"        %  "logback-classic"  % Version.logback   exclude("org.slf4j", "slf4j-api")
+  val metrics     = "com.codahale.metrics"  %  "metrics-core"     % Version.metrics   exclude("org.slf4j", "slf4j-api")
+  val neo4j       = "org.neo4j"             %  "neo4j"            % Version.neo4j     excludeAll (neo4jExcludes: _*)
+  val scopt       = "com.github.scopt"     %%  "scopt"            % Version.scopt
+  val slf4j       = "org.slf4j"             %  "slf4j-api"        % Version.slf4j
+  val scalatest   = "org.scalatest"        %%  "scalatest"        % Version.scalatest
+  val scalacheck  = "org.scalacheck"       %%  "scalacheck"       % Version.scalacheck
 }
 
 object Dependencies {

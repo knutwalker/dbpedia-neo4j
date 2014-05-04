@@ -45,7 +45,7 @@ object Build extends Build {
     .dependsOn(dbpediaCore, dbpediaLoader)
     .settings(dbpediaModuleSettings: _*)
     .settings(libraryDependencies ++=
-      test(scalacheck, scalatest))
+      test(scalacheck, scalatest, commonsLang))
 
 
   lazy val dbpediaImporter = Project("importer", file("dbpedia-importer"))
