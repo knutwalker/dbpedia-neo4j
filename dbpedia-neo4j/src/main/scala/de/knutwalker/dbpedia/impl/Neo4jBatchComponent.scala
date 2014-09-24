@@ -1,12 +1,14 @@
 package de.knutwalker.dbpedia.impl
 
-import com.carrotsearch.hppc.{ ObjectLongMap, ObjectLongOpenHashMap }
-import de.knutwalker.dbpedia.importer.{ MetricsComponent, SettingsComponent, GraphComponent }
 import java.util
-import org.neo4j.graphdb.{ DynamicRelationshipType, DynamicLabel, Label, RelationshipType }
+
+import com.carrotsearch.hppc.{ ObjectLongMap, ObjectLongOpenHashMap, ObjectObjectOpenHashMap }
+import de.knutwalker.dbpedia.importer.{ GraphComponent, MetricsComponent, SettingsComponent }
+import org.neo4j.graphdb.{ DynamicLabel, DynamicRelationshipType, Label, RelationshipType }
 import org.neo4j.helpers.collection.MapUtil
 import org.neo4j.unsafe.batchinsert.{ BatchInserter, BatchInserters }
-import scala.collection.mutable
+
+import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
 trait Neo4jBatchComponent extends GraphComponent {
@@ -21,7 +23,7 @@ trait Neo4jBatchComponent extends GraphComponent {
 
     private[this] var inserter: BatchInserter = _
 
-    private[this] val labels = new mutable.AnyRefMap[String, Label](512)
+    private[this] val labels = new ObjectObjectOpenHashMap[String, Label](512)
 
     private[this] var resources: ObjectLongMap[String] = _
     private[this] var bnodes: ObjectLongMap[String] = _
@@ -86,7 +88,12 @@ trait Neo4jBatchComponent extends GraphComponent {
     }
 
     private def getLabel(label: String): Label = {
-      labels.getOrElseUpdate(label, DynamicLabel.label(label))
+      if (labels.containsKey(label)) labels.lget()
+      else {
+        val newLabel = DynamicLabel.label(label)
+        labels.put(label, newLabel)
+        newLabel
+      }
     }
 
     private def makeLabels(dynamicLabels: List[String]): List[Label] = dynamicLabels.map(getLabel)
@@ -201,6 +208,7 @@ trait Neo4jBatchComponent extends GraphComponent {
         oldLabels += label
       }
 
+      @tailrec
       def loop0(ls: List[Label], hasNew: Boolean): Boolean =
         if (ls.isEmpty) hasNew
         else if (!oldLabels(ls.head)) {

@@ -1,9 +1,8 @@
 package de.knutwalker.dbpedia.impl
 
-import de.knutwalker.dbpedia.importer.{ MetricsComponent, GraphComponent, HandlerComponent }
-import de.knutwalker.dbpedia.{ Literal, BNode, Statement, Node, Resource }
-import scala.collection.mutable
-import scala.util.Try
+import com.carrotsearch.hppc.ObjectObjectOpenHashMap
+import de.knutwalker.dbpedia.importer.{ GraphComponent, HandlerComponent, MetricsComponent }
+import de.knutwalker.dbpedia.{ BNode, Literal, Node, Resource, Statement }
 
 trait DefaultHandlerComponent extends HandlerComponent {
   this: GraphComponent with MetricsComponent ⇒
@@ -16,10 +15,15 @@ trait DefaultHandlerComponent extends HandlerComponent {
     private val PrefLabel = Resource("http://www.w3.org/2004/02/skos/core#prefLabel")
     private val RdfsLabel = Resource("http://www.w3.org/2000/01/rdf-schema#label")
 
-    private val rels = new mutable.AnyRefMap[String, RelType](100)
+    private val rels = new ObjectObjectOpenHashMap[String, RelType](100)
 
     private def relTypeFor(name: String): RelType = {
-      rels.getOrElseUpdate(name, graph.createRelTypeFor(name))
+      if (rels.containsKey(name)) rels.lget()
+      else {
+        val newRel = graph.createRelTypeFor(name)
+        rels.put(name, newRel)
+        newRel
+      }
     }
 
     def isLabel(p: Node) = p == RdfsLabel || p == PrefLabel

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
 import scala.annotation.{ switch, tailrec }
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
-import scala.collection.{ AbstractIterator, GenIterable }
+import scala.collection.GenIterable
 import scala.util.Try
 
 final class NtParser {
@@ -501,7 +501,7 @@ object NtParser {
   def create(lines: JIterator[String]): JIterator[Statement] =
     apply(lines.asScala).asJava
 
-  private class ParsingIterator(p: NtParser, underlying: Iterator[String]) extends AbstractIterator[Statement] {
+  private class ParsingIterator(p: NtParser, underlying: Iterator[String]) extends Iterator[Statement] {
     private var nextStatement: Statement = _
 
     def hasNext: Boolean = nextStatement ne null

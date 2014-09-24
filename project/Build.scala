@@ -16,7 +16,7 @@ object Build extends Build {
   // Root Project
   // -------------------------------------------------------------------------------------------------------------------
 
-  lazy val root = Project("root",file("."))
+  lazy val root = Project("dbpedia-root",file("."))
     .aggregate(dbpediaCore, dbpediaParser, dbpediaLoader, dbpediaImporter, dbpediaNeo4j)
     .settings(basicSettings: _*)
     .settings(noPublishing: _*)
@@ -26,14 +26,14 @@ object Build extends Build {
   // Modules
   // -------------------------------------------------------------------------------------------------------------------
 
-  lazy val dbpediaCore = Project("core", file("dbpedia-core"))
+  lazy val dbpediaCore = Project("dbpedia-core", file("dbpedia-core"))
     .settings(dbpediaModuleSettings: _*)
     .settings(libraryDependencies ++=
       compile(slf4j) ++
       test(scalacheck, scalatest))
 
 
-  lazy val dbpediaLoader = Project("loader", file("dbpedia-loader"))
+  lazy val dbpediaLoader = Project("dbpedia-loader", file("dbpedia-loader"))
     .dependsOn(dbpediaCore)
     .settings(dbpediaModuleSettings: _*)
     .settings(libraryDependencies ++=
@@ -41,28 +41,28 @@ object Build extends Build {
       test(scalacheck, scalatest))
 
 
-  lazy val dbpediaParser = Project("parser", file("dbpedia-parser"))
+  lazy val dbpediaParser = Project("dbpedia-parser", file("dbpedia-parser"))
     .dependsOn(dbpediaCore, dbpediaLoader)
     .settings(dbpediaModuleSettings: _*)
     .settings(libraryDependencies ++=
       test(scalacheck, scalatest, commonsLang))
 
 
-  lazy val dbpediaImporter = Project("importer", file("dbpedia-importer"))
+  lazy val dbpediaImporter = Project("dbpedia-importer", file("dbpedia-importer"))
     .dependsOn(dbpediaCore, dbpediaLoader, dbpediaParser)
     .settings(dbpediaModuleSettings: _*)
     .settings(libraryDependencies ++=
-      compile(disruptor, metrics, config, scopt) ++
+      compile(disruptor, hppc, metrics, config, scopt) ++
       test(scalacheck, scalatest))
 
 
-  lazy val dbpediaNeo4j = Project("neo4j", file("dbpedia-neo4j"))
+  lazy val dbpediaNeo4j = Project("dbpedia-neo4j", file("dbpedia-neo4j"))
     .dependsOn(dbpediaCore, dbpediaLoader, dbpediaParser, dbpediaImporter)
     .settings(dbpediaModuleSettings: _*)
     .settings(dbpediaAssemblySettings: _*)
     .settings(mainClass in assembly := Some("de.knutwalker.dbpedia.neo4j.ParallelImport"))
     .settings(libraryDependencies ++=
-      compile(neo4j, hppc, logback) ++
+      compile(neo4j, logback) ++
       test(scalacheck, scalatest))
 
 }

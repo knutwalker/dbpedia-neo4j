@@ -14,10 +14,11 @@ object BuildSettings {
     homepage              := Some(new URL("http://blog.knutwalker.de/")),
     organization          := "de.knutwalker",
     organizationHomepage  := Some(new URL("http://blog.knutwalker.de/")),
-    description           := "A set of tools for paring and inporting DBpedia triples into Neo4j",
+    description           := "A set of tools for paring and importing DBpedia triples into Neo4j",
     startYear             := Some(2014),
     licenses              := Seq("GPLv3" -> new URL("http://www.gnu.org/licenses/gpl-3.0-standalone.html")),
     scalaVersion          := Version.scala,
+    crossScalaVersions    := List("2.10.4", "2.11.2"),
     scalacOptions         := List(
       "-feature",
       "-unchecked",
