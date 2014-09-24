@@ -12,8 +12,7 @@ trait DefaultImporterComponent extends ImporterComponent {
 
     def apply(fileNames: List[String], txSize: Int, p: Parser, h: Handler) = {
 
-      val statements = fileNames.toIterator.flatMap(p.apply)
-
+      val statements = fileNames.toIterator.flatMap(p)
       val grouped = itertools.groupIter(statements)(_.s)
 
       grouped foreach {
@@ -21,6 +20,8 @@ trait DefaultImporterComponent extends ImporterComponent {
           val subject = allStatements.head.s
           h(subject, allStatements.toList)
       }
+
+      metrics.reportAll()
     }
   }
 

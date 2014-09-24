@@ -18,7 +18,7 @@ class NamedThreadFactory private (threadNamePrefix: String) extends ThreadFactor
 }
 
 object NamedThreadFactory {
-  private[this] final val DEFAULT_NAME = "DBPedia"
+  private[this] final val DEFAULT_NAME = "DBpedia"
   private[this] final val NAME_PATTERN = "%s-%d-thread"
   private[this] final val threadPoolNumber = new AtomicInteger(1)
 

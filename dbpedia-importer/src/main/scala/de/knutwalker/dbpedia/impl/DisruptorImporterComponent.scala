@@ -16,13 +16,12 @@ trait DisruptorImporterComponent extends ImporterComponent {
 
     private val threadFactory = NamedThreadFactory()
     val waitStrategy = new BusySpinWaitStrategy
-    // TODO: estimate
     private val bufferSize = 1 << 10
 
     def apply(fileNames: List[String], txSize: Int, p: Parser, h: Handler) = {
 
       val executor = Executors.newSingleThreadExecutor(threadFactory)
-      val disruptor = new Disruptor(
+      val disruptor: Disruptor[StatementEvent] = new Disruptor(
         StatementEvent, bufferSize, executor, ProducerType.SINGLE, waitStrategy)
 
       val eventHandler = StatementEventHandler(h)

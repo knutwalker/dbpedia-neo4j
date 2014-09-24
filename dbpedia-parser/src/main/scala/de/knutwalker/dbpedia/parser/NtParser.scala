@@ -7,7 +7,7 @@ import java.lang.StringBuilder
 import java.nio.charset.Charset
 import org.slf4j.LoggerFactory
 import scala.annotation.{ tailrec, switch }
-import scala.collection.AbstractIterator
+import scala.collection.{ GenIterable, GenIterableLike, AbstractIterator }
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
 
@@ -163,10 +163,10 @@ final class NtParser {
   @tailrec private[this] def percentEscaped0(idx: Int, buf: Array[Byte]): Array[Byte] = {
     buf(idx) = capturePercentDigits()
     cursor match {
-      case '%' =>
+      case '%' ⇒
         advance()
         percentEscaped0(idx + 1, grow(buf, idx + 2))
-      case _ => buf
+      case _ ⇒ buf
     }
   }
 
@@ -212,17 +212,17 @@ final class NtParser {
     captureHexDigit() * 4096 +
     captureHexDigit() * 256 +
     captureHexDigit() * 16 +
-    captureHexDigit()).asInstanceOf[Char]
+    captureHexDigit()).toChar
 
   private[this] def captureSuperUnicodeDigits(): Int =
     captureHexDigit() * 268435456 +
-    captureHexDigit() * 16777216 +
-    captureHexDigit() * 1048576 +
-    captureHexDigit() * 65536 +
-    captureHexDigit() * 4096 +
-    captureHexDigit() * 256 +
-    captureHexDigit() * 16 +
-    captureHexDigit()
+      captureHexDigit() * 16777216 +
+      captureHexDigit() * 1048576 +
+      captureHexDigit() * 65536 +
+      captureHexDigit() * 4096 +
+      captureHexDigit() * 256 +
+      captureHexDigit() * 16 +
+      captureHexDigit()
 
   private[this] def captureHexDigit(): Int = {
     assert(IS_HEX_CHAR(cursor), s"$cursor is not a hex character")
@@ -231,17 +231,17 @@ final class NtParser {
     r
   }
 
-//  @tailrec private[this] def captureHexDigits0(index: Int, len: Int, buf: Array[Char]): Char = {
-//    if (index < len) {
-//      IS_HEX_CHAR(cursor) || error(Array('a')) // TODD: HEX_CHARS  // TODO: F || error => require(That)
-//      buf(index) = cursor
-//      advance()
-//      captureHexDigits0(index + 1, len, buf)
-//    }
-//    else {
-//      java.lang.Integer.parseInt(new String(buf), 16).asInstanceOf[Char]
-//    }
-//  }
+  //  @tailrec private[this] def captureHexDigits0(index: Int, len: Int, buf: Array[Char]): Char = {
+  //    if (index < len) {
+  //      IS_HEX_CHAR(cursor) || error(Array('a')) // TODD: HEX_CHARS  // TODO: F || error => require(That)
+  //      buf(index) = cursor
+  //      advance()
+  //      captureHexDigits0(index + 1, len, buf)
+  //    }
+  //    else {
+  //      java.lang.Integer.parseInt(new String(buf), 16).asInstanceOf[Char]
+  //    }
+  //  }
 
   private[this] def TypedLiteral(value: String) = {
     advance("^^") || error('^')
@@ -364,8 +364,8 @@ final class NtParser {
 
   private[this] def error(s: String) = {
     val cursorChar = cursor match {
-      case END => "EOI"
-      case x => x.toString
+      case END ⇒ "EOI"
+      case x   ⇒ x.toString
     }
     throwError(s"parsing error at char ${pos + 1}, expected [$s], but found [$cursorChar]")
   }
@@ -469,7 +469,7 @@ object NtParser {
   def apply(is: InputStream): Iterator[Statement] =
     apply(Loader.getLines(is, `UTF-8`.name))
 
-  def apply(i: Iterable[String]): Iterator[Statement] =
+  def apply(i: GenIterable[String]): Iterator[Statement] =
     apply(i.iterator)
 
   def apply(i: Iterator[String]): Iterator[Statement] = {

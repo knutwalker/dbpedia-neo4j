@@ -11,7 +11,7 @@ trait ImporterComponent {
 
     def apply(fileNames: List[String], txSize: Int, p: Parser, h: Handler): Unit
 
-    def apply(settings: SettingsComponent#Settings): Unit = {
+    final def apply(settings: SettingsComponent#Settings): Unit = {
       val p = parser
       val h = handler
       val g = graph
