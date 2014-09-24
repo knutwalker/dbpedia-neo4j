@@ -5,7 +5,8 @@ import de.knutwalker.dbpedia.importer.{ ImporterComponent, GraphComponent }
 
 trait BaseImporter extends ScoptSettingsComponent
     with DefaultParserComponent
-    with DefaultMetricsComponent
+    //    with DefaultMetricsComponent
+    with MinimalMetricsComponent
     with DefaultHandlerComponent {
   this: GraphComponent with ImporterComponent ⇒
 
