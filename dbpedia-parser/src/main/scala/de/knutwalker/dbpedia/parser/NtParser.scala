@@ -1,14 +1,18 @@
 package de.knutwalker.dbpedia.parser
 
-import de.knutwalker.dbpedia.loader.Loader
-import de.knutwalker.dbpedia.{ Literal, BNode, Resource, Triple, Statement, Node }
 import java.io.InputStream
-import java.lang.StringBuilder
+import java.lang.{ StringBuilder, Iterable ⇒ JIterable }
 import java.nio.charset.Charset
+import java.util.{ Iterator ⇒ JIterator }
+
+import de.knutwalker.dbpedia.loader.Loader
+import de.knutwalker.dbpedia.{ BNode, Literal, Node, Resource, Statement, Triple }
 import org.slf4j.LoggerFactory
-import scala.annotation.{ tailrec, switch }
-import scala.collection.{ GenIterable, GenIterableLike, AbstractIterator }
+
+import scala.annotation.{ switch, tailrec }
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import scala.collection.{ AbstractIterator, GenIterable }
 import scala.util.Try
 
 final class NtParser {
@@ -30,16 +34,14 @@ final class NtParser {
   def parseTry(line: String): Try[Option[Statement]] = Try(Option(parse(line)))
 
   def parseOrNull(line: String): Statement = {
-    try {
-      parse(line)
-    }
-    catch {
-      case t: Throwable ⇒
-        logger.error("parser error", t)
+    try parse(line) catch {
+      case pe: ParsingError ⇒
+        logger.error("parser error", pe)
         null
     }
   }
 
+  @throws[ParsingError]("ParsingError if a line could not be parsed")
   def parse(line: String): Statement = {
     if (line.isEmpty) null
     else {
@@ -464,48 +466,70 @@ object NtParser {
   val `UTF-8` = Charset.forName("UTF-8")
 
   def apply(fileName: String): Iterator[Statement] =
-    apply(Loader.getLines(fileName, `UTF-8`.name))
+    apply(fileName, `UTF-8`)
+
+  def apply(fileName: String, encoding: Charset): Iterator[Statement] =
+    apply(Loader.getLines(fileName, encoding))
 
   def apply(is: InputStream): Iterator[Statement] =
-    apply(Loader.getLines(is, `UTF-8`.name))
+    apply(is, `UTF-8`)
 
-  def apply(i: GenIterable[String]): Iterator[Statement] =
-    apply(i.iterator)
+  def apply(is: InputStream, encoding: Charset): Iterator[Statement] =
+    apply(Loader.getLines(is, encoding))
 
-  def apply(i: Iterator[String]): Iterator[Statement] = {
-    // TODO: make named class
-    val p = new NtParser
-    new AbstractIterator[Statement] {
-      private final val underlying = i
-      private var nextStatement: Statement = _
+  def apply(lines: GenIterable[String]): Iterator[Statement] =
+    apply(lines.iterator)
 
-      @tailrec private def advance0(): Statement = {
-        if (!underlying.hasNext) null
-        else {
-          val line = p.parseOrNull(underlying.next())
-          if (line ne null) line
-          else advance0()
-        }
-      }
+  def apply(lines: Iterator[String]): Iterator[Statement] =
+    new ParsingIterator(new NtParser, lines)
 
-      private def advance(): Statement = {
-        val before = nextStatement
-        nextStatement = advance0()
-        before
-      }
+  def create(fileName: String): JIterator[Statement] =
+    apply(fileName).asJava
 
+  def create(fileName: String, encoding: Charset): JIterator[Statement] =
+    apply(fileName, encoding).asJava
+
+  def create(is: InputStream): JIterator[Statement] =
+    apply(is).asJava
+
+  def create(is: InputStream, encoding: Charset): JIterator[Statement] =
+    apply(is, encoding).asJava
+
+  def create(lines: JIterable[String]): JIterator[Statement] =
+    apply(lines.asScala).asJava
+
+  def create(lines: JIterator[String]): JIterator[Statement] =
+    apply(lines.asScala).asJava
+
+  private class ParsingIterator(p: NtParser, underlying: Iterator[String]) extends AbstractIterator[Statement] {
+    private var nextStatement: Statement = _
+
+    def hasNext: Boolean = nextStatement ne null
+
+    def next(): Statement = {
+      if (nextStatement eq null) Iterator.empty.next()
       advance()
+    }
 
-      def hasNext: Boolean = nextStatement ne null
+    advance()
 
-      def next(): Statement = {
-        if (nextStatement eq null) Iterator.empty.next()
-        advance()
+    @tailrec private def advance0(): Statement = {
+      if (!underlying.hasNext) null
+      else {
+        val line = p.parseOrNull(underlying.next())
+        if (line ne null) line
+        else advance0()
       }
+    }
+
+    private def advance(): Statement = {
+      val before = nextStatement
+      nextStatement = advance0()
+      before
     }
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     val line = "_:abc <def> \"ghi\" ."
 
     val BitUgly = """<http://de.dbpedia.org/resource/Wiera_%22Vera%22_Gran> <http://www.w3.org/2000/01/rdf-schema#label> "Wiera \"Vera\" Gran"@de . """
