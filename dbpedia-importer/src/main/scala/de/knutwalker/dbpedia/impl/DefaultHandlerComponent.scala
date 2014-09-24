@@ -24,11 +24,11 @@ trait DefaultHandlerComponent extends HandlerComponent {
 
     def isLabel(p: Node) = p == RdfsLabel || p == PrefLabel
 
-    private def handleSubject(subject: Resource, labels: List[String], value: Option[String]): NodeType = {
-      graph.getAndUpdateResource(subject.toString, value, Labels.resource :: labels)
+    private def createResource(subject: Resource, labels: List[String], value: Option[String]): NodeType = {
+      graph.createOrUpdateResource(subject.toString, value, Labels.resource :: labels)
     }
 
-    private def handleResource(resource: Resource): NodeType = {
+    private def createResource(resource: Resource): NodeType = {
       graph.getOrCreateResource(resource.toString, None, Labels.resource :: Nil)
     }
 
@@ -36,31 +36,27 @@ trait DefaultHandlerComponent extends HandlerComponent {
       graph.getOrCreateBNode(subject.toString, Labels.bNode :: Nil)
     }
 
-    private def handleBNode(subject: BNode): NodeType = {
-      graph.getOrCreateBNode(subject.toString, Labels.bNode :: Nil)
-    }
-
-    private def handleSubject(subject: Node, labels: List[String], value: Option[String]): NodeType = subject match {
-      case x: BNode    ⇒ createBNode(x)
-      case x: Resource ⇒ handleSubject(x, labels, value)
-    }
-
-    private def handleObject(obj: Literal): NodeType = {
+    private def createLiteral(obj: Literal): NodeType = {
       val value = obj.toString
       val tpe = obj.dt.toList.map(_.toString)
 
       graph.createLiteral(value, tpe)
     }
 
-    private def handleObject(obj: Node): NodeType = obj match {
-      case x: Literal  ⇒ handleObject(x)
-      case x: BNode    ⇒ handleBNode(x)
-      case x: Resource ⇒ handleResource(x)
-    }
-
-    private def handlePredicate(subj: NodeType, obj: NodeType, pred: String): Unit = {
+    private def createPredicate(subj: NodeType, obj: NodeType, pred: String): Unit = {
       val relType = relTypeFor(pred)
       graph.createRel(subj, obj, pred, relType)
+    }
+
+    private def handleSubject(subject: Node, labels: List[String], value: Option[String]): NodeType = subject match {
+      case x: BNode    ⇒ createBNode(x)
+      case x: Resource ⇒ createResource(x, labels, value)
+    }
+
+    private def handleObject(obj: Node): NodeType = obj match {
+      case x: Literal  ⇒ createLiteral(x)
+      case x: BNode    ⇒ createBNode(x)
+      case x: Resource ⇒ createResource(x)
     }
 
     private def handleStatement(subjectNode: NodeType, nodes: Statement): Unit = {
@@ -70,7 +66,7 @@ trait DefaultHandlerComponent extends HandlerComponent {
       val predicateName = predicate.toString
       val objNode = handleObject(obj)
 
-      handlePredicate(subjectNode, objNode, predicateName)
+      createPredicate(subjectNode, objNode, predicateName)
     }
 
     private def handleStatements(subject: Node, labels: List[String], value: Option[String], nodes: List[Statement]) = {

@@ -28,9 +28,13 @@ trait DefaultMetricsComponent extends MetricsComponent {
 
     def time[A](name: String)(f: ⇒ A): A = {
       val timer = reg.timer(name)
-      timer.time(new Callable[A] {
-        def call() = f
-      })
+      val startTime = System.nanoTime()
+      try {
+        f
+      }
+      finally {
+        timer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS)
+      }
     }
 
     def tripleAdded(n: Long) = triples.mark(n)

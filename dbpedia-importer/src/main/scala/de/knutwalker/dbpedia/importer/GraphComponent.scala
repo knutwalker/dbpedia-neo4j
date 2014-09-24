@@ -38,13 +38,13 @@ trait GraphComponent {
 
     def shutdown(): Unit
 
-    final def getOrCreateBNode(subject: String, labels: List[String] = Nil) =
-      timeGetBNode(subject).getOrElse(timeCreateBNode(subject, labels))
+    def getOrCreateBNode(name: String, labels: List[String] = Nil) =
+      timeGetBNode(name).getOrElse(timeCreateBNode(name, labels))
 
-    final def getOrCreateResource(uri: String, value: Option[String], labels: List[String] = Nil) =
+    def getOrCreateResource(uri: String, value: Option[String], labels: List[String] = Nil) =
       timeGetResource(uri).getOrElse(timeCreateResource(uri, value, labels))
 
-    final def getAndUpdateResource(uri: String, value: Option[String], labels: List[String]): NodeType =
+    def createOrUpdateResource(uri: String, value: Option[String], labels: List[String]): NodeType =
       timeGetResource(uri) match {
         case Some(id) ⇒ timeUpdateResource(id, value, labels)
         case None     ⇒ timeCreateResource(uri, value, labels)
@@ -74,14 +74,14 @@ trait GraphComponent {
 
     // timing wrappers
 
-    private val timeGetBNode = makeTimeWrapper1("lookup-bnode", getBNode)
-    private val timeGetResource = makeTimeWrapper1("lookup-resource", getResourceNode)
-    private val timeUpdateResource = makeTimeWrapper3("update-resource", updateResourceNode)
+    protected val timeGetBNode = makeTimeWrapper1("lookup-bnode", getBNode)
+    protected val timeGetResource = makeTimeWrapper1("lookup-resource", getResourceNode)
+    protected val timeUpdateResource = makeTimeWrapper3("update-resource", updateResourceNode)
 
-    private val timeCreateBNode = makeTimeWrapper2("create-bnode", makeMarkWrapper2(metrics.nodeAdded(), createBNode))
-    private val timeCreateResource = makeTimeWrapper3("create-resource", makeMarkWrapper3(metrics.nodeAdded(), createResourceNode))
-    private val timeCreateLiteral = makeTimeWrapper2("create-literal", makeMarkWrapper2(metrics.nodeAdded(), createLiteralNode))
-    private val timeCreateRelationship = makeTimeWrapper4("create-rel", makeMarkWrapper4(metrics.relAdded(), createRelationship))
+    protected val timeCreateBNode = makeTimeWrapper2("create-bnode", makeMarkWrapper2(metrics.nodeAdded(), createBNode))
+    protected val timeCreateResource = makeTimeWrapper3("create-resource", makeMarkWrapper3(metrics.nodeAdded(), createResourceNode))
+    protected val timeCreateLiteral = makeTimeWrapper2("create-literal", makeMarkWrapper2(metrics.nodeAdded(), createLiteralNode))
+    protected val timeCreateRelationship = makeTimeWrapper4("create-rel", makeMarkWrapper4(metrics.relAdded(), createRelationship))
 
     private[this] def makeTimeWrapper1[A, R](timeName: String, fn: A ⇒ R) = (v1: A) ⇒ metrics.time(timeName) { fn(v1) }
 

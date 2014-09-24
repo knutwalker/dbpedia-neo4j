@@ -26,6 +26,9 @@ trait Neo4jBatchComponent extends GraphComponent {
     private[this] var resources: ObjectLongMap[String] = _
     private[this] var bnodes: ObjectLongMap[String] = _
 
+    private[this] val p1 = new util.HashMap[String, AnyRef](1)
+    private[this] val p2 = new util.HashMap[String, AnyRef](2)
+
     def startup(settings: SettingsComponent#Settings): Unit = {
       val inserterConfig = {
         val megs: Double = 1000 * 1000
@@ -88,9 +91,8 @@ trait Neo4jBatchComponent extends GraphComponent {
 
     private def makeLabels(dynamicLabels: List[String]): List[Label] = dynamicLabels.map(getLabel)
 
-    private def get(cache: ObjectLongMap[String], key: String): Option[Long] = {
-      val n = cache.getOrDefault(key, -1)
-      if (n == -1) None else Some(n)
+    private def get(cache: ObjectLongMap[String], key: String): Long = {
+      cache.getOrDefault(key, -1)
     }
 
     private def set(cache: ObjectLongMap[String], key: String, properties: util.Map[String, AnyRef], labels: List[Label]): NodeType = {
@@ -99,29 +101,36 @@ trait Neo4jBatchComponent extends GraphComponent {
       n
     }
 
-    private def props(k: String, v: AnyRef): java.util.Map[String, AnyRef] = {
-      val p = new java.util.HashMap[String, AnyRef](1)
-      //      if (v ne null)
-      p.put(k, v)
-      p
+    private def props(k: String, v: AnyRef): util.Map[String, AnyRef] = {
+      p1.put(k, v)
+      p1
     }
 
-    private def props(k1: String, v1: AnyRef, k2: String, v2: String): java.util.Map[String, AnyRef] = {
-      val p = new java.util.HashMap[String, AnyRef](2)
-      //      if (v1 ne null)
-      p.put(k1, v1)
-      //      if (v2 ne null)
-      p.put(k2, v2)
-      p
+    private def props(k1: String, v1: AnyRef, k2: String, v2: String): util.Map[String, AnyRef] = {
+      p2.put(k1, v1)
+      p2.put(k2, v2)
+      p2
     }
 
-    protected def getBNode(subject: String) = get(bnodes, subject)
+    protected def getBNode(subject: String) = {
+      val n = get(bnodes, subject)
+      if (n == -1) None else Some(n)
+    }
 
     protected def createBNode(subject: String, labels: List[String]) = {
       set(bnodes, subject, null, makeLabels(labels))
     }
 
-    protected def getResourceNode(uri: String) = get(resources, uri)
+    override def getOrCreateBNode(name: String, labels: List[String]): NodeType = {
+      val n = get(bnodes, name)
+      if (n == -1) timeCreateBNode(name, labels)
+      else n
+    }
+
+    protected def getResourceNode(uri: String) = {
+      val n = get(resources, uri)
+      if (n == -1) None else Some(n)
+    }
 
     protected def createResourceNode(uri: String, value: Option[String], labels: List[String]) = {
       val ls = makeLabels(labels)
@@ -129,6 +138,12 @@ trait Neo4jBatchComponent extends GraphComponent {
         props(Properties.uri, uri, Properties.value, v)
       }
       set(resources, uri, p, ls)
+    }
+
+    override def getOrCreateResource(uri: String, value: Option[String], labels: List[String]): NodeType = {
+      val n = get(resources, uri)
+      if (n == -1) timeCreateResource(uri, value, labels)
+      else n
     }
 
     def updateResourceNode(id: Long, value: Option[String], labels: List[String]) = {
@@ -142,6 +157,12 @@ trait Neo4jBatchComponent extends GraphComponent {
       }
 
       id
+    }
+
+    override def createOrUpdateResource(uri: String, value: Option[String], labels: List[String]): NodeType = {
+      val n = get(resources, uri)
+      if (n != -1) timeUpdateResource(n, value, labels)
+      else timeCreateResource(uri, value, labels)
     }
 
     private def maybeUpdateValue(id: Long, value: Option[String]) = {
@@ -174,20 +195,30 @@ trait Neo4jBatchComponent extends GraphComponent {
       val builder = new ListBuffer[Label]
       val iter = jLabels.iterator()
 
-      var hasNewLabels = false
-
       while (iter.hasNext) {
         val label = iter.next()
         builder += label
         oldLabels += label
       }
 
-      newLabels foreach { label ⇒
-        if (!oldLabels(label)) {
-          builder += label
-          hasNewLabels = true
+      def loop0(ls: List[Label], hasNew: Boolean): Boolean =
+        if (ls.isEmpty) hasNew
+        else if (!oldLabels(ls.head)) {
+          builder += ls.head
+          loop0(ls.tail, hasNew = true)
         }
-      }
+        else {
+          loop0(ls.tail, hasNew)
+        }
+
+      val hasNewLabels = loop0(newLabels, hasNew = false)
+
+      //      newLabels foreach { label ⇒
+      //        if (!oldLabels(label)) {
+      //          builder += label
+      //          hasNewLabels = true
+      //        }
+      //      }
 
       if (hasNewLabels) Some(builder.result())
       else None
