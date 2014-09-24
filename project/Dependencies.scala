@@ -1,19 +1,19 @@
 import sbt._
 
 object Version {
-  val scala        = "2.11.0"
+  val scala        = "2.11.2"
   val commonsLang  = "3.3.2"
-  val compress     = "1.8"
-  val config       = "1.2.0"
-  val disruptor    = "3.2.1"
-  val hppc         = "0.6.0"
+  val compress     = "1.8.1"
+  val config       = "1.2.1"
+  val disruptor    = "3.3.0"
+  val hppc         = "0.6.1"
   val logback      = "1.1.2"
   val metrics      = "3.0.2"
   val neo4j        = "2.0.3"
   val scopt        = "3.2.0"
   val slf4j        = "1.7.7"
-  val scalatest    = "2.1.5"
-  val scalacheck   = "1.11.3"
+  val scalatest    = "2.2.2"
+  val scalacheck   = "1.11.5"
 }
 
 object Library {
