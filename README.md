@@ -126,3 +126,28 @@ here's an example output:
 ## Credits
 
 Credit goes to [@zazi](https://github.com/zazi) and [@sojoner](https://github.com/sojoner) for outlining the data model definition and possibly creating the need for this importer
+
+
+## Use just the Parser
+
+Checkout this repository and run
+
+    ./sbt "+clean" "+dbpedia-parser/publishM2"
+
+Then include `de.knutwalker:dbpedia-parser:0.1-SNAPSHOT` and use the Parser like this
+
+
+```scala
+import de.knutwalker.dbpedia.Statement
+import de.knutwalker.dbpedia.parser.NtParser
+
+val statements: Iterator[Statement] = NtParser("file.nt")
+```
+
+```java
+import de.knutwalker.dbpedia.Statement
+import de.knutwalker.dbpedia.parser.NtParser
+
+Iterator<Statement> statements = NtParser.parse("file.nt");
+```
+
