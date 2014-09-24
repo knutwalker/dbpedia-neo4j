@@ -483,22 +483,22 @@ object NtParser {
   def apply(lines: Iterator[String]): Iterator[Statement] =
     new ParsingIterator(new NtParser, lines)
 
-  def create(fileName: String): JIterator[Statement] =
+  def parse(fileName: String): JIterator[Statement] =
     apply(fileName).asJava
 
-  def create(fileName: String, encoding: Charset): JIterator[Statement] =
+  def parse(fileName: String, encoding: Charset): JIterator[Statement] =
     apply(fileName, encoding).asJava
 
-  def create(is: InputStream): JIterator[Statement] =
+  def parse(is: InputStream): JIterator[Statement] =
     apply(is).asJava
 
-  def create(is: InputStream, encoding: Charset): JIterator[Statement] =
+  def parse(is: InputStream, encoding: Charset): JIterator[Statement] =
     apply(is, encoding).asJava
 
-  def create(lines: JIterable[String]): JIterator[Statement] =
+  def parse(lines: JIterable[String]): JIterator[Statement] =
     apply(lines.asScala).asJava
 
-  def create(lines: JIterator[String]): JIterator[Statement] =
+  def parse(lines: JIterator[String]): JIterator[Statement] =
     apply(lines.asScala).asJava
 
   private class ParsingIterator(p: NtParser, underlying: Iterator[String]) extends Iterator[Statement] {
