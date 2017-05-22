@@ -8,7 +8,7 @@ scalaVersion := Version.scala
 
 resolvers ++= List(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
-  "NxParser" at "http://nxparser.googlecode.com/svn/repository"
+  "NxParser" at "https://mvnrepository.com/artifact/org.semanticweb.yars/nxparser"
 )
 
 scalacOptions ++= Seq(
