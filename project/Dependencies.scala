@@ -9,7 +9,7 @@ object Version {
   val logback      = "1.1.2"
   val metrics      = "3.0.2"
   val neo4j        = "2.0.2"
-  val nxParser     = "1.2.5"
+  val nxParser     = "1.2.1"
   val slf4j        = "1.7.7"
 }
 
