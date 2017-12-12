@@ -3,6 +3,7 @@ package de.knutwalker.dbpedia.impl
 import com.carrotsearch.hppc.{ ObjectLongMap, ObjectLongOpenHashMap }
 import de.knutwalker.dbpedia.components.{ MetricsComponent, SettingsComponent, GraphComponent }
 import java.util
+import java.io.File
 import org.neo4j.graphdb.{ DynamicLabel, Label, RelationshipType }
 import org.neo4j.helpers.collection.MapUtil
 import org.neo4j.unsafe.batchinsert.BatchInserters
