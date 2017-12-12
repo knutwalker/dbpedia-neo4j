@@ -63,7 +63,7 @@ trait FastBatchGraphComponent extends GraphComponent {
 
     private val inserter = {
       val config = inserterConfig
-      BatchInserters.inserter(DB_PATH, config)
+      BatchInserters.inserter(new File(DB_PATH), config)
     }
 
     if (settings.createDeferredIndices) {
