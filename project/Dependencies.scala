@@ -8,15 +8,15 @@ object Version {
   val hppc         = "0.6.0"
   val logback      = "1.1.2"
   val metrics      = "3.0.2"
-  val neo4j        = "2.0.2"
+  val neo4j        = "3.3.1"
   val nxParser     = "1.2.10"
   val slf4j        = "1.7.7"
 }
 
 object Library {
   val neo4jExcludes = List(
-    ExclusionRule("org.neo4j", "neo4j-cypher-compiler-1.9"),
     ExclusionRule("org.neo4j", "neo4j-cypher-compiler-2.0"),
+    ExclusionRule("org.neo4j", "neo4j-cypher-compiler-3.1"),
     ExclusionRule("org.neo4j", "neo4j-cypher"),
     ExclusionRule("org.neo4j", "neo4j-udc"),
     ExclusionRule("org.neo4j", "neo4j-graph-algo"),
